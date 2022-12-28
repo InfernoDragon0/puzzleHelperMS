@@ -1,5 +1,6 @@
 ## puzzleHelperMS
 ![image](https://i.imgur.com/A7WHQFB.png)
+
 An OpenCV python script to help with the puzzle mini game in MS
 
 ### Prerequisites
