@@ -81,7 +81,8 @@ def runCV():
         img = numpy.fromstring(signedIntsArray, dtype='uint8')
         img.shape = (h,w,4)
         datashow = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-        datasmol = datashow[0:800, 400:900]
+        datasmol = datashow[50:800, 400:900] #800,500 downscale 4 times to 200,125
+        datascaled = cv2.resize(datasmol, interpolation=cv2.INTER_AREA, dsize=(datasmol.shape[1]//6, datasmol.shape[0]//6))
 
         if not matchFound: #run a loop and matchTemplate on each of the images loaded
             for image in imageData:
@@ -101,7 +102,9 @@ def runCV():
                     imageCut = []
                     for i in range(4):
                         for j in range(5):
-                            imageCut.append(image[curY:curY+cutY, curX:curX+cutX])
+                            nextImage = image[curY:curY+cutY, curX:curX+cutX]
+                            resized = cv2.resize(nextImage, interpolation=cv2.INTER_AREA, dsize=(nextImage.shape[1]//6, nextImage.shape[0]//6))
+                            imageCut.append(resized)
                             curX += cutX
                             # cv2.imshow('image' + str(i) + str(j), imageCut)
                             # cv2.waitKey(0)
@@ -118,15 +121,16 @@ def runCV():
             if imageCut is not None:
                 #loop through and match each one, see if performance tanks super hard (indeed it does)
                 for i in range(len(imageCut)):
-                    result = cv2.matchTemplate(datasmol, imageCut[i], cv2.TM_CCOEFF_NORMED)
+                    result = cv2.matchTemplate(datascaled, imageCut[i], cv2.TM_CCOEFF_NORMED)
                     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
                     #print("searching for match: " + str(max_val))
-                    if max_val > 0.75:
+                    if max_val > 0.85:
                         #show the image in cv2
-                        print("PIECE FOUND with chance of: " + str(max_val))
-                        cv2.rectangle(datasmol, (max_loc[0], max_loc[1]), (max_loc[0] + imageCut[i].shape[1], max_loc[1] + imageCut[i].shape[0]), (0, 0, 255), 2)
-                        cv2.putText(datasmol, "R" + str((i//5)+1) + "C"+str((i%5)+1), (max_loc[0], max_loc[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                        #print("PIECE FOUND with chance of: " + str(max_val))
+                        cv2.rectangle(datasmol, (max_loc[0]*6, max_loc[1]*6), (max_loc[0]*6 + imageCut[i].shape[1]*6, max_loc[1]*6 + imageCut[i].shape[0]*6), (0, 0, 255), 2)
+                        cv2.putText(datasmol, "R" + str((i//5)+1) + "C"+str((i%5)+1), (max_loc[0]*6, max_loc[1]*6), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                 cv2.imshow("finder", datasmol)
+                #cv2.imshow("smaller", datascaled)
                 
                        
 
