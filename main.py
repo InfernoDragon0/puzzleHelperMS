@@ -13,7 +13,7 @@ w = 1366
 h = 768
 mouseX,mouseY = 0,0
 
-targetFPS = 30 #change this to change the FPS
+targetFPS = 60 #change this to change the FPS
 
 # data
 matchFound = False
