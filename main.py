@@ -83,6 +83,7 @@ def runCV():
         datashow = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
         datasmol = datashow[50:800, 400:900] #800,500 downscale 4 times to 200,125
         datascaled = cv2.resize(datasmol, interpolation=cv2.INTER_AREA, dsize=(datasmol.shape[1]//6, datasmol.shape[0]//6))
+        gray_version = cv2.cvtColor(datascaled, cv2.COLOR_BGR2GRAY)
 
         if not matchFound: #run a loop and matchTemplate on each of the images loaded
             for image in imageData:
@@ -119,17 +120,31 @@ def runCV():
         else:
             #match found, now open viewer and write rectangles
             if imageCut is not None:
-                #loop through and match each one, see if performance tanks super hard (indeed it does)
-                for i in range(len(imageCut)):
-                    result = cv2.matchTemplate(datascaled, imageCut[i], cv2.TM_CCOEFF_NORMED)
-                    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-                    #print("searching for match: " + str(max_val))
-                    if max_val > 0.85:
-                        #show the image in cv2
-                        #print("PIECE FOUND with chance of: " + str(max_val))
-                        cv2.rectangle(datasmol, (max_loc[0]*6, max_loc[1]*6), (max_loc[0]*6 + imageCut[i].shape[1]*6, max_loc[1]*6 + imageCut[i].shape[0]*6), (0, 0, 255), 2)
-                        cv2.putText(datasmol, "R" + str((i//5)+1) + "C"+str((i%5)+1), (max_loc[0]*6, max_loc[1]*6), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-                cv2.imshow("finder", datasmol)
+                #end when it is black
+                countNonBlack = cv2.countNonZero(gray_version)
+                hx,wx = gray_version.shape
+                totalpixels = hx*wx
+                countBlack = totalpixels - countNonBlack
+                #print("black count is ", countBlack, " out of ", totalpixels, " pixels")
+                if countBlack > 0.8*totalpixels:
+                    print("BLACK SCREEN, move to next image")
+                    cv2.destroyAllWindows()
+                    matchFound = False
+                    imageSelected = None
+                    imageCut = None
+                
+                else:
+                #loop through and match each one
+                    for i in range(len(imageCut)):
+                        result = cv2.matchTemplate(datascaled, imageCut[i], cv2.TM_CCOEFF_NORMED)
+                        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+                        #print("searching for match: " + str(max_val))
+                        if max_val > 0.85:
+                            #show the image in cv2
+                            #print("PIECE FOUND with chance of: " + str(max_val))
+                            cv2.rectangle(datasmol, (max_loc[0]*6, max_loc[1]*6), (max_loc[0]*6 + imageCut[i].shape[1]*6, max_loc[1]*6 + imageCut[i].shape[0]*6), (0, 0, 255), 2)
+                            cv2.putText(datasmol, "R" + str((i//5)+1) + "C"+str((i%5)+1), (max_loc[0]*6, max_loc[1]*6), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                    cv2.imshow("finder", datasmol)
                 #cv2.imshow("smaller", datascaled)
                 
                        
