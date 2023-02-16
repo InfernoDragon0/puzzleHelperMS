@@ -1,7 +1,7 @@
 ## puzzleHelperMS
 ![image](https://i.imgur.com/A7WHQFB.png)
 
-An OpenCV python script to help with the puzzle mini game in MS
+An OpenCV python script to help with the puzzle mini game in MS. Note: this uses a non-invasive method. It uses OpenCV to capture the screen and act upon the current status of the game.
 
 ### Prerequisites
 - OpenCV2
